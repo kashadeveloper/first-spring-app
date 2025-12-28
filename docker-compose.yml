@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  app:
+    container_name: spring_backend
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - spring_network
+  postgres:
+    container_name: postgres_db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: kasha
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - spring_network
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - spring_network
+
+volumes:
+  pg_data:
+
+networks:
+  spring_network:
+    driver: bridge

@@ -10,7 +10,7 @@ public class TaskDto {
     @NotBlank(message = "Title is required")
     private String title;
 
-    @Size(max = 400, message = "Max size of description - 450 chars")
-    private String description;
-    private Boolean completed;
+    @Size(max = 450, message = "Max size of description - 450 chars")
+    private String description = "";
+    private Boolean completed = false;
 }
