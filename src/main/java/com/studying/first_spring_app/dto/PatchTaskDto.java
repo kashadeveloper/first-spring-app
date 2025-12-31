@@ -1,19 +1,14 @@
 package com.studying.first_spring_app.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
-public record TaskDto(
-        UUID id,
-
-        @NotBlank(message = "Title is required")
+public record PatchTaskDto(
         @Size(max = 100, message = "Title is too large")
         String title,
 
         @Size(max = 400, message = "Description is too large")
         String description,
+
         Boolean completed
 ) {
 }

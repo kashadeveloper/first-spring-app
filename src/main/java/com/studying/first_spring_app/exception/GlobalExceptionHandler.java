@@ -2,11 +2,18 @@ package com.studying.first_spring_app.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -15,15 +22,51 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new AppErrorResponse("Resource not found", HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
-        var errors = e.getFieldErrors().stream().map(x -> new ValidationErrorResponse.ValidationError(x.getField(), x.getDefaultMessage())).toList();
-        return new ResponseEntity<>(new ValidationErrorResponse("Validation failed", errors), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ValidationErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        List<ValidationErrorResponse.ValidationError> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> new ValidationErrorResponse.ValidationError(
+                        error.getField(),
+                        error.getDefaultMessage()
+                ))
+                .toList();
+
+        return new ValidationErrorResponse("Validation error", errors);
     }
 
     @ExceptionHandler(value = ResponseStatusException.class)
     public ResponseEntity<AppErrorResponse> handleResponseStatusException(ResponseStatusException e) {
         return new ResponseEntity<>(new AppErrorResponse(e.getReason(), e.getStatusCode().value()), e.getStatusCode());
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class,})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppErrorResponse handleBadRequest(Exception ex) {
+        if (ex instanceof MethodArgumentTypeMismatchException) {
+            return new AppErrorResponse(((MethodArgumentTypeMismatchException) ex).getPropertyName() + " is invalid", HttpStatus.BAD_REQUEST.value());
+        }
+
+        return new AppErrorResponse("Bad Request", HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public AppErrorResponse handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
+        return new AppErrorResponse("Method not allowed", HttpStatus.METHOD_NOT_ALLOWED.value());
+    }
+
+    @ExceptionHandler(TaskAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public AppErrorResponse handleTaskAlreadyExists(TaskAlreadyExistsException e) {
+        return new AppErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value());
+    }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public AppErrorResponse handleTaskNotFound(TaskNotFoundException e) {
+        return new AppErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value());
     }
 
     @ExceptionHandler(value = Exception.class)

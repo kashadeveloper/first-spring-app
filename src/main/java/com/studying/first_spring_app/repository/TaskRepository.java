@@ -1,43 +1,21 @@
 package com.studying.first_spring_app.repository;
 
-import com.studying.first_spring_app.exception.NotFoundException;
 import com.studying.first_spring_app.model.Task;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
-@Data
-public class TaskRepository {
-    @Getter
-    private final ArrayList<Task> taskList = new ArrayList<>();
+public interface TaskRepository extends JpaRepository<Task, UUID> {
+    boolean existsByTitle(String title);
+    boolean existsByTitleAndIdNot(String title, UUID id);
 
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
-    private int nextId;
-
-    public void addTask(Task task) {
-        nextId++;
-        task.setId(nextId);
-        taskList.add(task);
-    }
-
-    public void removeTask(Task task) {
-        nextId--;
-        taskList.remove(task);
-    }
-
-    public void removeTask(int id) {
-        nextId--;
-        Task task = getById(id);
-        taskList.remove(task);
-    }
-
-    public Task getById(int id) {
-        return taskList.stream().filter(x -> x.getId() == id).findFirst().orElseThrow(() -> new NotFoundException("Task not found"));
-    }
+    @Modifying
+    @Query("DELETE FROM Task WHERE id IN :ids")
+    void deleteAllByIds(@Param("ids") List<UUID> ids);
 }
