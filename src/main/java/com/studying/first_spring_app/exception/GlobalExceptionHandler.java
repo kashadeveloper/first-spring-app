@@ -1,5 +1,6 @@
 package com.studying.first_spring_app.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = NoResourceFoundException.class)
@@ -71,8 +73,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<AppErrorResponse> handleException(Exception e) {
-        System.err.println(e.getMessage() + " | " + e.getClass().getName());
-        e.printStackTrace();
+        log.error("Exception: {}", e.getMessage(), e);
         return new ResponseEntity<>(new AppErrorResponse("Unhandled error", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
