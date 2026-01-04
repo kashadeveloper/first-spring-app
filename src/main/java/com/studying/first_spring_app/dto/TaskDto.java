@@ -1,10 +1,12 @@
 package com.studying.first_spring_app.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record TaskDto(
         UUID id,
 
@@ -14,6 +16,8 @@ public record TaskDto(
 
         @Size(max = 400, message = "Description is too large")
         String description,
-        Boolean completed
+        Boolean completed,
+
+        String image_id
 ) {
 }

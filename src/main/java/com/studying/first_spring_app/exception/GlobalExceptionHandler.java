@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -69,6 +70,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public AppErrorResponse handleTaskNotFound(TaskNotFoundException e) {
         return new AppErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value());
+    }
+
+    @ExceptionHandler(value = MultipartException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppErrorResponse handleMultipartException(MultipartException e) {
+        return new AppErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler(value = Exception.class)

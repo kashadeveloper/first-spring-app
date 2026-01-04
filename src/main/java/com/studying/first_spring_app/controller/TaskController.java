@@ -1,15 +1,21 @@
 package com.studying.first_spring_app.controller;
 
+import com.studying.first_spring_app.dto.CreateTaskDto;
+import com.studying.first_spring_app.dto.FileResponse;
 import com.studying.first_spring_app.dto.PatchTaskDto;
 import com.studying.first_spring_app.dto.TaskDto;
 import com.studying.first_spring_app.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -32,8 +38,34 @@ public class TaskController {
     }
 
     @PostMapping
-    public TaskDto addTask(@Valid @RequestBody TaskDto dto) {
+    public TaskDto addTask(@Valid @RequestBody CreateTaskDto dto) {
         return taskService.newTask(dto);
+    }
+
+    @PostMapping("{id}/image")
+    public Object uploadImage(@PathVariable UUID id,
+                              @RequestParam("file") MultipartFile file) {
+        final Set<String> SUPPORTED_IMAGE_TYPES = Set.of(
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/webp",
+                "image/svg+xml"
+        );
+
+        if(!SUPPORTED_IMAGE_TYPES.contains(file.getContentType())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file type");
+        }
+
+        return taskService.uploadImage(id, file);
+    }
+
+    @GetMapping("{id}/image")
+    public Object getImage(@PathVariable UUID id) {
+        FileResponse imageResponse = taskService.getImage(id);
+        return ResponseEntity.ok()
+                .contentType(imageResponse.contentType())
+                .body(new InputStreamResource(imageResponse.stream()));
     }
 
     @PatchMapping("{id}")

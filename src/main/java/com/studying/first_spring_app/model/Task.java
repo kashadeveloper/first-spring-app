@@ -27,4 +27,7 @@ public class Task {
 
     @Column(nullable = false, name = "is_completed")
     private boolean completed = false;
+
+    @Column(name = "image_id")
+    private String imageId = "";
 }

@@ -1,5 +1,7 @@
 package com.studying.first_spring_app.service;
 
+import com.studying.first_spring_app.dto.CreateTaskDto;
+import com.studying.first_spring_app.dto.FileResponse;
 import com.studying.first_spring_app.dto.PatchTaskDto;
 import com.studying.first_spring_app.dto.TaskDto;
 import com.studying.first_spring_app.exception.TaskAlreadyExistsException;
@@ -8,8 +10,11 @@ import com.studying.first_spring_app.mapper.TaskMapper;
 import com.studying.first_spring_app.model.Task;
 import com.studying.first_spring_app.repository.TaskRepository;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -20,14 +25,16 @@ import java.util.UUID;
 public class TaskService {
     private final TaskMapper taskMapper;
     private final TaskRepository taskRepository;
+    private final FileStorageService fileStorageService;
 
-    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper, FileStorageService fileStorageService) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional
-    public TaskDto newTask(TaskDto dto) {
+    public TaskDto newTask(CreateTaskDto dto) {
         var task = taskMapper.toEntity(dto);
         if (taskRepository.existsByTitle(dto.title())) {
             throw new TaskAlreadyExistsException();
@@ -66,6 +73,25 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Ids is empty");
         }
         taskRepository.deleteAllByIds(ids);
+    }
+
+    @Transactional
+    public TaskDto uploadImage(UUID id, MultipartFile file) {
+        var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
+        var fileName = fileStorageService.upload(file, id.toString());
+        task.setImageId(fileName);
+
+        return taskMapper.toDto(taskRepository.save(task));
+    }
+
+    public FileResponse getImage(UUID id) {
+        var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
+        var stream = fileStorageService.getObject(task.getImageId());
+
+        MediaType contentType = MediaTypeFactory.getMediaType(task.getImageId())
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
+
+        return new FileResponse(stream, task.getImageId(), contentType);
     }
 
     public List<TaskDto> getTaskList() {
