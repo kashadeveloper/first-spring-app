@@ -1,9 +1,6 @@
 package com.studying.first_spring_app.controller;
 
-import com.studying.first_spring_app.dto.CreateTaskDto;
-import com.studying.first_spring_app.dto.FileResponse;
-import com.studying.first_spring_app.dto.PatchTaskDto;
-import com.studying.first_spring_app.dto.TaskDto;
+import com.studying.first_spring_app.dto.*;
 import com.studying.first_spring_app.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.core.io.InputStreamResource;
@@ -28,7 +25,7 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskDto> index() {
+    public Object index() {
         return taskService.getTaskList();
     }
 

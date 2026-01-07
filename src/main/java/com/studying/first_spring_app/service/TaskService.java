@@ -1,9 +1,6 @@
 package com.studying.first_spring_app.service;
 
-import com.studying.first_spring_app.dto.CreateTaskDto;
-import com.studying.first_spring_app.dto.FileResponse;
-import com.studying.first_spring_app.dto.PatchTaskDto;
-import com.studying.first_spring_app.dto.TaskDto;
+import com.studying.first_spring_app.dto.*;
 import com.studying.first_spring_app.exception.TaskAlreadyExistsException;
 import com.studying.first_spring_app.exception.TaskNotFoundException;
 import com.studying.first_spring_app.mapper.TaskMapper;
@@ -39,7 +36,7 @@ public class TaskService {
         if (taskRepository.existsByTitle(dto.title())) {
             throw new TaskAlreadyExistsException();
         }
-        return taskMapper.toDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.save(task));
     }
 
     @Transactional
@@ -52,7 +49,7 @@ public class TaskService {
 
         taskMapper.patchEntity(dto, task);
 
-        return taskMapper.toDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.save(task));
     }
 
     @Transactional
@@ -64,7 +61,7 @@ public class TaskService {
     }
 
     public TaskDto getTask(UUID id) {
-        return taskMapper.toDto(taskRepository.findById(id).orElseThrow(TaskNotFoundException::new));
+        return taskMapper.toDetailedDto(taskRepository.findById(id).orElseThrow(TaskNotFoundException::new));
     }
 
     @Transactional
@@ -81,7 +78,7 @@ public class TaskService {
         var fileName = fileStorageService.upload(file, id.toString());
         task.setImageId(fileName);
 
-        return taskMapper.toDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.save(task));
     }
 
     public FileResponse getImage(UUID id) {
@@ -94,7 +91,7 @@ public class TaskService {
         return new FileResponse(stream, task.getImageId(), contentType);
     }
 
-    public List<TaskDto> getTaskList() {
-        return taskMapper.toDto(taskRepository.findAll());
+    public List<TaskSummaryDto> getTaskList() {
+        return taskMapper.toSummaryDto(taskRepository.findAll());
     }
 }
