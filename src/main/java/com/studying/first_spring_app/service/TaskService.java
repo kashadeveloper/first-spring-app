@@ -31,12 +31,12 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto newTask(CreateTaskDto dto) {
+    public TaskDto create(CreateTaskDto dto) {
         var task = taskMapper.toEntity(dto);
         if (taskRepository.existsByTitle(dto.title())) {
             throw new TaskAlreadyExistsException();
         }
-        return taskMapper.toDetailedDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.saveAndFlush(task));
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class TaskService {
 
         taskMapper.patchEntity(dto, task);
 
-        return taskMapper.toDetailedDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.saveAndFlush(task));
     }
 
     @Transactional

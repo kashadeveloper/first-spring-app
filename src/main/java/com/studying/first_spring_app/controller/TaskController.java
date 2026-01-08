@@ -36,7 +36,7 @@ public class TaskController {
 
     @PostMapping
     public TaskDto addTask(@Valid @RequestBody CreateTaskDto dto) {
-        return taskService.newTask(dto);
+        return taskService.create(dto);
     }
 
     @PostMapping("{id}/image")

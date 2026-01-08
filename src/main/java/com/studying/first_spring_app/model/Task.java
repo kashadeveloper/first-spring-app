@@ -39,5 +39,16 @@ public class Task {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @Column(name = "priority", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TaskPriority priority;
+
+    @PrePersist
+    public void prePersist() {
+        if(this.priority == null) {
+            this.priority = TaskPriority.LOW;
+        }
+    }
 }
