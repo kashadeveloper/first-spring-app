@@ -4,6 +4,7 @@ import com.studying.first_spring_app.config.MinioProperties;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,12 @@ public class FileStorageService {
             return "bin";
         }
         return originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
+    }
+
+
+    @SneakyThrows
+    public void removeObject(String objectId) {
+        minioClient.removeObject(RemoveObjectArgs.builder().object(objectId).bucket(minioProperties.getBucketName()).build());
     }
 
     @SneakyThrows

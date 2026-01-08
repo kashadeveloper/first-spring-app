@@ -75,10 +75,14 @@ public class TaskService {
     @Transactional
     public TaskDto uploadImage(UUID id, MultipartFile file) {
         var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
-        var fileName = fileStorageService.upload(file, id.toString());
+        var imageId = UUID.randomUUID().toString();
+        if(!task.getImageId().isBlank()) {
+            fileStorageService.removeObject(task.getImageId());
+        }
+        var fileName = fileStorageService.upload(file, imageId);
         task.setImageId(fileName);
 
-        return taskMapper.toDetailedDto(taskRepository.save(task));
+        return taskMapper.toDetailedDto(taskRepository.saveAndFlush(task));
     }
 
     public FileResponse getImage(UUID id) {
