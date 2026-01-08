@@ -1,5 +1,7 @@
 package com.studying.first_spring_app;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ public class FirstSpringAppApplication {
         SpringApplication.run(FirstSpringAppApplication.class, args);
     }
 
+    @Operation(hidden = true)
     @GetMapping("/")
     public static ResponseEntity<?> index() {
         return new ResponseEntity<>("Hello World", HttpStatus.OK);

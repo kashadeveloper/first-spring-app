@@ -5,8 +5,13 @@ import com.studying.first_spring_app.dto.FileResponse;
 import com.studying.first_spring_app.dto.PatchTaskDto;
 import com.studying.first_spring_app.dto.TaskDto;
 import com.studying.first_spring_app.model.Task;
+import com.studying.first_spring_app.model.TaskPriority;
 import com.studying.first_spring_app.repository.TaskSpecification;
 import com.studying.first_spring_app.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
+@Tag(name = "Tasks")
 @RequestMapping("/tasks")
 public class TaskController {
     private final TaskService taskService;
@@ -33,11 +39,15 @@ public class TaskController {
         this.taskService = taskService;
     }
 
+    @Operation(summary = "Get tasks list")
     @GetMapping
     public Object index(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean completed,
-            @RequestParam(required = false) String priority,
+
+            @RequestParam(required = false)
+            @Schema(allowableValues = {"LOW", "MEDIUM", "HIGH"})
+            String priority,
 
             @PageableDefault(size = 100, sort = "updatedAt")
             Pageable pageable) {
@@ -65,16 +75,19 @@ public class TaskController {
         return taskService.search(spec, pageable);
     }
 
+    @Operation(summary = "Get task info by id")
     @GetMapping("{id}")
     public TaskDto getTask(@PathVariable UUID id) {
         return taskService.getTask(id);
     }
 
+    @Operation(summary = "Create new task")
     @PostMapping
     public TaskDto addTask(@Valid @RequestBody CreateTaskDto dto) {
         return taskService.create(dto);
     }
 
+    @Operation(summary = "Set task image")
     @PostMapping("{id}/image")
     public Object uploadImage(@PathVariable UUID id,
                               @RequestParam("file") MultipartFile file) {
@@ -93,6 +106,7 @@ public class TaskController {
         return taskService.uploadImage(id, file);
     }
 
+    @Operation(summary = "Get task image")
     @GetMapping("{id}/image")
     public Object getImage(@PathVariable UUID id) {
         FileResponse imageResponse = taskService.getImage(id);
@@ -101,17 +115,20 @@ public class TaskController {
                 .body(new InputStreamResource(imageResponse.stream()));
     }
 
+    @Operation(summary = "Update task info by id")
     @PatchMapping("{id}")
     public TaskDto updateTask(@Valid @RequestBody PatchTaskDto dto, @PathVariable UUID id) {
         return taskService.updateTask(id, dto);
     }
 
+    @Operation(summary = "Delete task by id")
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteTask(@PathVariable UUID id) {
         taskService.deleteTask(id);
         return new ResponseEntity<>(Map.of("status", "success"), HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete multiple tasks by id")
     @DeleteMapping
     public Object deleteAllTasksByIds(@RequestBody List<UUID> ids) {
         taskService.deleteAllTasksByIds(ids);
