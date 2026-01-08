@@ -6,6 +6,8 @@ import com.studying.first_spring_app.exception.TaskNotFoundException;
 import com.studying.first_spring_app.mapper.TaskMapper;
 import com.studying.first_spring_app.model.Task;
 import com.studying.first_spring_app.repository.TaskRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
@@ -97,5 +99,10 @@ public class TaskService {
 
     public List<TaskSummaryDto> getTaskList() {
         return taskMapper.toSummaryDto(taskRepository.findAll());
+    }
+
+    public List<TaskSummaryDto> search(Specification<Task> spec, Pageable pageable) {
+        var books = taskRepository.findAll(spec, pageable);
+        return books.map(taskMapper::toSummaryDto).getContent();
     }
 }

@@ -1,9 +1,18 @@
 package com.studying.first_spring_app.controller;
 
-import com.studying.first_spring_app.dto.*;
+import com.studying.first_spring_app.dto.CreateTaskDto;
+import com.studying.first_spring_app.dto.FileResponse;
+import com.studying.first_spring_app.dto.PatchTaskDto;
+import com.studying.first_spring_app.dto.TaskDto;
+import com.studying.first_spring_app.model.Task;
+import com.studying.first_spring_app.repository.TaskSpecification;
 import com.studying.first_spring_app.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +34,35 @@ public class TaskController {
     }
 
     @GetMapping
-    public Object index() {
-        return taskService.getTaskList();
+    public Object index(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Boolean completed,
+            @RequestParam(required = false) String priority,
+
+            @PageableDefault(size = 100, sort = "updatedAt")
+            Pageable pageable) {
+        Specification<Task> spec = TaskSpecification.all();
+
+        if (title != null) {
+            spec = spec.and(TaskSpecification.hasTitle(title));
+        }
+        if (completed != null) {
+            spec = spec.and(TaskSpecification.hasCompletedStatus(completed));
+        }
+        if (priority != null) {
+            spec = spec.and(TaskSpecification.hasPriority(priority));
+        }
+
+        boolean sortByPriority = pageable.getSort().stream()
+                .anyMatch(order -> order.getProperty().equals("priority"));
+
+        if(sortByPriority) {
+            boolean isDesc = pageable.getSort().getOrderFor("priority").isDescending();
+            spec = spec.and(TaskSpecification.orderByPriority(isDesc));
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return taskService.search(spec, pageable);
     }
 
     @GetMapping("{id}")
@@ -50,7 +86,7 @@ public class TaskController {
                 "image/svg+xml"
         );
 
-        if(!SUPPORTED_IMAGE_TYPES.contains(file.getContentType())) {
+        if (!SUPPORTED_IMAGE_TYPES.contains(file.getContentType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file type");
         }
 

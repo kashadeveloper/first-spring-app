@@ -1,10 +1,7 @@
 package com.studying.first_spring_app.dto.utils;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDateTime;
 
 public interface HasCreationDate {
-    @JsonProperty("created_at")
     LocalDateTime createdAt();
 }

@@ -1,6 +1,7 @@
 package com.studying.first_spring_app.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -76,6 +77,20 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppErrorResponse handleMultipartException(MultipartException e) {
         return new AppErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler(value = PropertyReferenceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppErrorResponse handlePropertyReferenceException(PropertyReferenceException e) {
+        var propertyName = e.getPropertyName();
+        var entityName = e.getType().getType().getSimpleName();
+        String message = String.format(
+                "Invalid field name '%s' for property reference '%s'",
+                propertyName,
+                entityName
+        );
+
+        return new AppErrorResponse(message, HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler(value = Exception.class)
