@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 
-public interface HasCreationDate {
-    @JsonProperty("created_at")
-    LocalDateTime createdAt();
+public interface HasUpdateDate {
+    @JsonProperty("updated_at")
+    LocalDateTime updatedAt();
 }
