@@ -5,6 +5,8 @@ import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -29,7 +31,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
-
         List<ValidationErrorResponse.ValidationError> errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> new ValidationErrorResponse.ValidationError(
                         error.getField(),
@@ -38,6 +39,18 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return new ValidationErrorResponse("Validation error", errors);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public AppErrorResponse handleBadCredentials(BadCredentialsException ex) {
+        return new AppErrorResponse("Bad credentials", HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<AppErrorResponse> handleUsernameNotFound(UsernameNotFoundException e) {
+        return new ResponseEntity<>(new AppErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = ResponseStatusException.class)
@@ -67,12 +80,18 @@ public class GlobalExceptionHandler {
         return new AppErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value());
     }
 
+
     @ExceptionHandler(TaskNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public AppErrorResponse handleTaskNotFound(TaskNotFoundException e) {
         return new AppErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value());
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public AppErrorResponse handleUserAlreadyExists(UserAlreadyExistsException e) {
+        return new AppErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value());
+    }
     @ExceptionHandler(value = MultipartException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppErrorResponse handleMultipartException(MultipartException e) {
