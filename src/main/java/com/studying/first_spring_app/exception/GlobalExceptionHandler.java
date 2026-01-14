@@ -1,5 +1,6 @@
 package com.studying.first_spring_app.exception;
 
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -47,6 +49,12 @@ public class GlobalExceptionHandler {
         return new AppErrorResponse("Bad credentials", HttpStatus.UNAUTHORIZED.value());
     }
 
+    @ExceptionHandler(JwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public AppErrorResponse handleJwtExceptions(JwtException ex) {
+        return new AppErrorResponse("Invalid token", HttpStatus.UNAUTHORIZED.value());
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<AppErrorResponse> handleUsernameNotFound(UsernameNotFoundException e) {
@@ -74,6 +82,12 @@ public class GlobalExceptionHandler {
         return new AppErrorResponse("Method not allowed", HttpStatus.METHOD_NOT_ALLOWED.value());
     }
 
+    @ExceptionHandler(MissingRequestCookieException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public AppErrorResponse handleMissingRequestCookie(MissingRequestCookieException ex) {
+        return new AppErrorResponse("Required cookie '" + ex.getCookieName() + "' is missing", HttpStatus.UNAUTHORIZED.value());
+    }
+
     @ExceptionHandler(TaskAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public AppErrorResponse handleTaskAlreadyExists(TaskAlreadyExistsException e) {
@@ -92,6 +106,7 @@ public class GlobalExceptionHandler {
     public AppErrorResponse handleUserAlreadyExists(UserAlreadyExistsException e) {
         return new AppErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value());
     }
+
     @ExceptionHandler(value = MultipartException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppErrorResponse handleMultipartException(MultipartException e) {

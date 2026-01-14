@@ -19,6 +19,7 @@ import java.util.function.Function;
 public class JwtService {
     private JwtProperties properties;
     private static final long EXPIRATION_TIME = 1000 * 60 * 15;
+    private static final long REFRESH_TIME = 1000 * 60 * 60 * 24 * 5;
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -31,6 +32,16 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", userDetails.getUsername());
+        return Jwts.builder().claims(claims)
+                .signWith(getPrivateKey())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_TIME))
+                .compact();
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
@@ -40,13 +51,10 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Универсальный метод для извлечения любого "клейма" (поля)
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
-
-    // --- Вспомогательные приватные методы ---
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
@@ -58,9 +66,9 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getPrivateKey()) // Указываем ключ для проверки подписи
+                .verifyWith(getPrivateKey())
                 .build()
-                .parseSignedClaims(token)   // Если подпись неверна, здесь вылетит исключение
+                .parseSignedClaims(token)
                 .getPayload();
     }
 

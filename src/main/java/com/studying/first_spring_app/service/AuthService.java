@@ -1,8 +1,9 @@
 package com.studying.first_spring_app.service;
 
 import com.studying.first_spring_app.dto.AuthRequest;
-import com.studying.first_spring_app.dto.AuthorizationResponse;
 import com.studying.first_spring_app.dto.CreateUserDto;
+import com.studying.first_spring_app.dto.RefreshTokenAuthToken;
+import com.studying.first_spring_app.dto.TokensResponse;
 import com.studying.first_spring_app.mapper.UserMapper;
 import com.studying.first_spring_app.model.User;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
 
-    public AuthorizationResponse register(CreateUserDto dto) {
+    public TokensResponse register(CreateUserDto dto) {
         var user = User.builder()
                 .username(dto.username())
                 .password(passwordEncoder.encode(dto.password()))
@@ -29,11 +30,12 @@ public class AuthService {
         user = userService.create(user);
 
         var accessToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthorizationResponse(accessToken, userMapper.toDto(user));
+        return new TokensResponse(accessToken, refreshToken);
     }
 
-    public AuthorizationResponse login(AuthRequest request) {
+    public TokensResponse login(AuthRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.username(),
@@ -43,7 +45,16 @@ public class AuthService {
 
         var user = userService.findByUsername(request.username());
         var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthorizationResponse(jwtToken, userMapper.toDto(user));
+        return new TokensResponse(jwtToken, refreshToken);
+    }
+
+    public TokensResponse refresh(String refreshToken) {
+        authenticationManager.authenticate(new RefreshTokenAuthToken(refreshToken));
+        var user = userService.findByUsername(jwtService.extractUsername(refreshToken));
+        var jwtToken = jwtService.generateToken(user);
+        var generatedRefreshToken = jwtService.generateRefreshToken(user);
+        return new TokensResponse(jwtToken, generatedRefreshToken);
     }
 }
