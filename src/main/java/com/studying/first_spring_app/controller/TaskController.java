@@ -77,9 +77,8 @@ public class TaskController {
 
     @Operation(summary = "Get task info by id")
     @GetMapping("{id}")
-    @PreAuthorize("@securityService.isTaskOwner(#id, authentication.name)")
-    public TaskDto getTask(@PathVariable UUID id) {
-        return taskService.getTask(id);
+    public TaskDto getTask(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        return taskService.getTask(id, user.getId());
     }
 
     @Operation(summary = "Create new task")
@@ -112,9 +111,8 @@ public class TaskController {
 
     @Operation(summary = "Get task image")
     @GetMapping("{id}/image")
-    @PreAuthorize("@securityService.isTaskOwner(#id, authentication.name)")
-    public Object getImage(@PathVariable UUID id) {
-        FileResponse imageResponse = taskService.getImage(id);
+    public Object getImage(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        FileResponse imageResponse = taskService.getImage(id, user.getId());
         return ResponseEntity.ok()
                 .contentType(imageResponse.contentType())
                 .body(new InputStreamResource(imageResponse.stream()));
@@ -137,7 +135,6 @@ public class TaskController {
 
     @Operation(summary = "Delete multiple tasks by id")
     @DeleteMapping
-//    @PreAuthorize("@securityService.isTaskOwner(#id, authentication.name)")
     public Object deleteAllTasksByIds(@RequestBody List<UUID> ids, @AuthenticationPrincipal User user) {
         taskService.deleteAllTasksByIds(ids, user.getId());
         return new ResponseEntity<>(Map.of("status", "success"), HttpStatus.OK);

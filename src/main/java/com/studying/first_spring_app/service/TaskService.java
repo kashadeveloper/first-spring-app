@@ -64,8 +64,8 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    public TaskDto getTask(UUID id) {
-        return taskMapper.toDetailedDto(taskRepository.findById(id).orElseThrow(TaskNotFoundException::new));
+    public TaskDto getTask(UUID id, UUID userId) {
+        return taskMapper.toDetailedDto(taskRepository.findByIdAndUserId(id, userId).orElseThrow(TaskNotFoundException::new));
     }
 
     @Transactional
@@ -89,8 +89,8 @@ public class TaskService {
         return taskMapper.toDetailedDto(taskRepository.saveAndFlush(task));
     }
 
-    public FileResponse getImage(UUID id) {
-        var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
+    public FileResponse getImage(UUID id, UUID userId) {
+        var task = taskRepository.findByIdAndUserId(id, userId).orElseThrow(TaskNotFoundException::new);
         if(task.getImageId().isBlank()) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Task not have image");
         }

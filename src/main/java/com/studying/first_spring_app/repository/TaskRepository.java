@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,6 +19,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
     boolean existsByTitle(String title);
 
     boolean existsByTitleAndIdNot(String title, UUID id);
+
+    Optional<Task> findByIdAndUserId(UUID id, UUID userId);
 
     @Modifying
     @Query("DELETE FROM Task t WHERE t.id IN :ids AND t.user.id = :user_id")
