@@ -6,18 +6,28 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 public class TaskSpecification {
+    public static Specification<Task> byUser(UUID userId) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("user").get("id"), userId);
+    }
+
     public static Specification<Task> all() {
         return (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.conjunction();
     }
+
     public static Specification<Task> hasTitle(String title) {
         return (root, criteriaQuery, builder)
                 -> builder.like(root.get("title"), "%" + title + "%");
     }
+
     public static Specification<Task> hasCompletedStatus(boolean completed) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("completed"), completed);
     }
+
     public static Specification<Task> hasPriority(String priority) throws ResponseStatusException {
         TaskPriority tp;
         try {

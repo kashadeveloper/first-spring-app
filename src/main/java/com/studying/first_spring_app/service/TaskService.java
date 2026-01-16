@@ -5,6 +5,7 @@ import com.studying.first_spring_app.exception.TaskAlreadyExistsException;
 import com.studying.first_spring_app.exception.TaskNotFoundException;
 import com.studying.first_spring_app.mapper.TaskMapper;
 import com.studying.first_spring_app.model.Task;
+import com.studying.first_spring_app.model.User;
 import com.studying.first_spring_app.repository.TaskRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,11 +34,12 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto create(CreateTaskDto dto) {
+    public TaskDto create(CreateTaskDto dto, User user) {
         var task = taskMapper.toEntity(dto);
         if (taskRepository.existsByTitle(dto.title())) {
             throw new TaskAlreadyExistsException();
         }
+        task.setUser(user);
         return taskMapper.toDetailedDto(taskRepository.saveAndFlush(task));
     }
 
@@ -67,11 +69,11 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteAllTasksByIds(List<UUID> ids) {
+    public void deleteAllTasksByIds(List<UUID> ids, UUID userId) {
         if (ids.isEmpty()) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Ids is empty");
         }
-        taskRepository.deleteAllByIds(ids);
+        taskRepository.deleteAllByIds(ids, userId);
     }
 
     @Transactional
@@ -89,6 +91,9 @@ public class TaskService {
 
     public FileResponse getImage(UUID id) {
         var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
+        if(task.getImageId().isBlank()) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Task not have image");
+        }
         var stream = fileStorageService.getObject(task.getImageId());
 
         MediaType contentType = MediaTypeFactory.getMediaType(task.getImageId())
@@ -102,7 +107,7 @@ public class TaskService {
     }
 
     public List<TaskSummaryDto> search(Specification<Task> spec, Pageable pageable) {
-        var books = taskRepository.findAll(spec, pageable);
-        return books.map(taskMapper::toSummaryDto).getContent();
+        var tasks = taskRepository.findAll(spec, pageable);
+        return tasks.map(taskMapper::toSummaryDto).getContent();
     }
 }

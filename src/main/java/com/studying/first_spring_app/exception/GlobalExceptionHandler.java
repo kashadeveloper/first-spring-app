@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -125,6 +126,12 @@ public class GlobalExceptionHandler {
         );
 
         return new AppErrorResponse(message, HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler(value = AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public AppErrorResponse handleAuthorizationDenied(AuthorizationDeniedException e) {
+        return new AppErrorResponse(e.getMessage(), HttpStatus.FORBIDDEN.value());
     }
 
     @ExceptionHandler(value = Exception.class)

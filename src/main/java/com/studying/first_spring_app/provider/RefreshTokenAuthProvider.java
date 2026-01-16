@@ -3,7 +3,6 @@ package com.studying.first_spring_app.provider;
 import com.studying.first_spring_app.dto.RefreshTokenAuthToken;
 import com.studying.first_spring_app.service.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;

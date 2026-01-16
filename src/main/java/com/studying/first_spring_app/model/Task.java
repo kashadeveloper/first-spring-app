@@ -1,5 +1,6 @@
 package com.studying.first_spring_app.model;
 
+import com.studying.first_spring_app.model.listeners.TaskListener;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "tasks")
+@EntityListeners(TaskListener.class)
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,10 +52,7 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 
-    @PrePersist
-    public void prePersist() {
-        if(this.priority == null) {
-            this.priority = TaskPriority.LOW;
-        }
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
