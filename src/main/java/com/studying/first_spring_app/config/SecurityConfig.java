@@ -50,7 +50,7 @@ public class SecurityConfig {
                     m.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .authorizeHttpRequests(req -> {
-                    req.requestMatchers("/actuator/swagger-ui/**").permitAll();
+                    req.requestMatchers("/api-docs/**").permitAll();
                     req.requestMatchers("/actuator/prometheus").permitAll();
                     req.requestMatchers("/auth/**").permitAll();
                     req.anyRequest().authenticated();
