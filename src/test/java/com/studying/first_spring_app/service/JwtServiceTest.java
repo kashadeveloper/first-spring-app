@@ -1,8 +1,7 @@
-package com.studying.first_spring_app;
+package com.studying.first_spring_app.service;
 
 import com.studying.first_spring_app.config.JwtProperties;
 import com.studying.first_spring_app.model.User;
-import com.studying.first_spring_app.service.JwtService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,13 +29,30 @@ public class JwtServiceTest {
     }
 
     @Test
-    void shouldGenerateValidToken() {
-        var user = new User();
-        user.setUsername("Lolo");
-        user.setPassword("<password>");
-        user.setId(UUID.randomUUID());
+    void shouldGenerateValidAccessToken() {
+        var user = User.builder().username("Lolo").password("Password").build();
 
         var token = jwtService.generateToken(user);
+
+        assertNotNull(token, "token should not be null");
+
+        var claims = Jwts.parser()
+                .verifyWith(getPrivateKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        assertNotNull(claims, "claims should not be null");
+        assertNotNull(claims.getSubject(), "subject should not be null");
+        assertEquals("Lolo", claims.getSubject(), "subject should be Lolo");
+        assertTrue(claims.getExpiration().after(new Date(System.currentTimeMillis())), "expiration should be after now");
+    }
+
+    @Test
+    void shouldGenerateValidRefreshToken() {
+        var user = User.builder().username("Lolo").password("Password").build();
+
+        var token = jwtService.generateRefreshToken(user);
 
         assertNotNull(token, "token should not be null");
 

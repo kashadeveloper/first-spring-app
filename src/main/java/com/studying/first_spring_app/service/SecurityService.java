@@ -13,11 +13,12 @@ public class SecurityService {
     private final TaskRepository taskRepository;
 
     public boolean isTaskOwner(UUID taskId, String username) {
-        var task = taskRepository.findById(taskId).orElse(null);
-        if(task == null) throw new TaskNotFoundException();
-        if(!task.getUser().getUsername().equals(username)) {
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(TaskNotFoundException::new);
+
+        if (!task.getUser().getUsername().equals(username)) {
             throw new TaskNotFoundException();
-        };
+        }
         return true;
     }
 }

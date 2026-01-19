@@ -34,7 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
-    @Value("${CORS_ORIGINS}")
+    @Value("${cors.origins}")
     private String allowedOrigins;
 
     private final JwtFilter jwtFilter;
