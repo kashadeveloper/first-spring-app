@@ -51,30 +51,41 @@ services:
     image: prom/prometheus
     container_name: my_prometheus
     ports:
-      - "9090:9090" # Стандартный порт Прометея
+      - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Прокидываем конфиг
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - spring_network
   grafana:
     image: grafana/grafana
     container_name: my_grafana
     ports:
-      - "3000:3000" # Графана живет на порту 3000
+      - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=root # Твой пароль для входа
+      - GF_SECURITY_ADMIN_PASSWORD=root
     volumes:
-      - grafana_data:/var/lib/grafana # Чтобы не терять дашборды после перезапуска
+      - grafana_data:/var/lib/grafana
     networks:
-      - spring_network # ОБЯЗАТЕЛЬНО та же сеть, что у Prometheus
+      - spring_network
     depends_on:
       - prometheus
+  redis:
+    image: redis:8.4-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - spring_network
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
   minio_data:
   grafana_data:
+  redis_data:
 
 networks:
   spring_network:

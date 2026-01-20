@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -74,7 +75,7 @@ public class TaskController {
 
         return taskService.search(spec, pageable);
     }
-
+    
     @Operation(summary = "Get task info by id")
     @GetMapping("{id}")
     public TaskDto getTask(@PathVariable UUID id, @AuthenticationPrincipal User user) {

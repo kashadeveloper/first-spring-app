@@ -11,7 +11,7 @@ import tools.jackson.databind.type.LogicalType;
 @Configuration
 public class JacksonConfig {
     @Bean
-    public JsonMapperBuilderCustomizer customizer() {
+    public JsonMapperBuilderCustomizer jacksonCustomizer() {
         return builder -> {
             builder.withCoercionConfig(LogicalType.Textual, cfg -> {
                 cfg.setCoercion(CoercionInputShape.Integer, CoercionAction.Fail);
